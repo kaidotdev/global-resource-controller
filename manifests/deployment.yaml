@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: global-resource-controller
+spec:
+  selector:
+    matchLabels:
+      app: global-resource-controller
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: global-resource-controller
+    spec:
+      serviceAccountName: global-resource-controller
+      securityContext:
+        sysctls:
+          # https://github.com/kubernetes/kubernetes/pull/54896
+          #- name: net.core.somaxconn
+          #  value: "65535"
+          - name: net.ipv4.ip_local_port_range
+            value: "10000 65535"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - global-resource-controller
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      containers:
+        - name: controller
+          image: docker.pkg.github.com/kaidotdev/global-resource-controller/global-resource-controller:v0.1.0
+          imagePullPolicy: Always
+          args:
+            - --metrics-addr=0.0.0.0:8080
+            - --enable-leader-election
+          ports:
+            - containerPort: 8080
