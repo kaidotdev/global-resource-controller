@@ -198,5 +198,6 @@ func (r *GlobalConfigMapReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&grV1.GlobalConfigMap{}).
+		Owns(&v1.ConfigMap{}).
 		Complete(r)
 }
