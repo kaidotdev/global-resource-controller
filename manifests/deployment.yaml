@@ -3,15 +3,15 @@ kind: Deployment
 metadata:
   name: global-resource-controller
 spec:
-  selector:
-    matchLabels:
-      app: global-resource-controller
   replicas: 4
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 25%
       maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: global-resource-controller
   template:
     metadata:
       labels:
